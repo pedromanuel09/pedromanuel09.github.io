@@ -5,17 +5,9 @@ import streamlit as st
 from pptx import Presentation
 import fitz
 
-try:
-    import win32com.client
-    POWERPOINT_COM = True
-except:
-    POWERPOINT_COM = False
-
-
 st.set_page_config(page_title="Generador OP", layout="wide")
 
 PLANTILLA = "plantilla.pptx"
-
 
 st.markdown("""
 <style>
@@ -123,16 +115,6 @@ def reemplazar_imagenes(prs, imagenes):
                         width=width,
                         height=height
                     )
-
-
-def convertir_pdf(pptx_path, pdf_path):
-    powerpoint = win32com.client.Dispatch("PowerPoint.Application")
-    powerpoint.Visible = 1
-
-    ppt = powerpoint.Presentations.Open(os.path.abspath(pptx_path))
-    ppt.SaveAs(os.path.abspath(pdf_path), 32)
-    ppt.Close()
-    powerpoint.Quit()
 
 
 st.title("Generador de Oportunidades de Inversión")
@@ -472,7 +454,6 @@ if st.button("GENERAR OPORTUNIDAD"):
         nombre_base = f"OP_{op}" if op else "OP_GENERADA"
 
         salida_pptx = os.path.join(temp_dir, nombre_base + ".pptx")
-        salida_pdf = os.path.join(temp_dir, nombre_base + ".pdf")
 
         prs.save(salida_pptx)
 
@@ -484,23 +465,6 @@ if st.button("GENERAR OPORTUNIDAD"):
                 f,
                 file_name=nombre_base + ".pptx"
             )
-
-        try:
-            if POWERPOINT_COM:
-                convertir_pdf(salida_pptx, salida_pdf)
-
-                with open(salida_pdf, "rb") as f:
-                    st.download_button(
-                        "Descargar PDF",
-                        f,
-                        file_name=nombre_base + ".pdf"
-                    )
-
-                st.success("PDF generado correctamente")
-
-        except Exception as e:
-            st.warning("No se pudo convertir a PDF automáticamente.")
-            st.caption(f"Detalle técnico: {e}")
 
     except Exception as e:
         st.error(f"Ocurrió un error: {e}")
